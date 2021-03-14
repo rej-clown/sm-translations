@@ -52,6 +52,22 @@ unsigned int CMTranslationCollection::GetSize()
     return (unsigned int) this->collection->GetFileCount();
 }
 
+int CMTranslationCollection::FindFile(const char *filename)
+{
+    IPhraseFile *pFile;
+    for(unsigned int i = 0; i < GetSize(); i++) {
+        pFile = GetFile(i);
+        // g_pSM->LogMessage(myself, "Input: %s, Value: %s, Index: %d", filename, (pFile->GetFilename()), i);
+
+        if(strcmp((pFile->GetFilename()), filename) == 0) 
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 IPhraseFile *CMTranslationCollection::GetFile(unsigned int file)
 {
     if(file > GetSize()) 
@@ -123,9 +139,9 @@ static cell_t CMTCollectionAddFile(IPluginContext *pContext, const cell_t *param
 
 static cell_t CMTCollectionGetFile(IPluginContext *pContext, const cell_t *params)
 {
-    HandleError err;
     Handle_t hndl = static_cast<Handle_t>(params[1]);
 
+    HandleError err;
     CMTranslationCollection *collection;
     if((err = handlesys->ReadHandle(hndl, htTCollection, NULL, (void **)&collection)) != HandleError_None)
     {
@@ -149,11 +165,29 @@ static cell_t CMTCollectionGetFile(IPluginContext *pContext, const cell_t *param
     return hndl;
 }
 
+static cell_t CMTCollectionFindFile(IPluginContext *pContext, const cell_t *params)
+{
+    Handle_t hndl = static_cast<Handle_t>(params[1]);
+
+    HandleError err;
+    CMTranslationCollection *collection;
+    if((err = handlesys->ReadHandle(hndl, htTCollection, NULL, (void **)&collection)) != HandleError_None)
+    {
+        return pContext->ThrowNativeError("Invalid handle index %x (error: %d)", hndl, err);
+    }
+
+    char *filename;
+    pContext->LocalToString(params[2], &filename);
+
+    return collection->FindFile((const char *) filename);
+}
+
 const sp_nativeinfo_t cmt_collection_natives[] =
 {
     {"PhraseCollection.PhraseCollection", CMTGetCollection},
     {"PhraseCollection.GetSize", CMTGetCollectionSize},
     {"PhraseCollection.GetFile", CMTCollectionGetFile},
     {"PhraseCollection.AddFile", CMTCollectionAddFile},
+    {"PhraseCollection.FindFile", CMTCollectionFindFile},
     {NULL, NULL}
 };

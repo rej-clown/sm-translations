@@ -38,8 +38,6 @@
  */
 
 #include <string>
-#include <string.h>
-#include <sh_vector.h>
 #include "smsdk_ext.h"
 
 
@@ -128,6 +126,7 @@ public :
 public :
 	// void Destroy();
 	unsigned int GetSize();
+	int FindFile(const char *filename);
 	IPhraseFile *GetFile(unsigned int file);
 	IPhraseFile *AddFile(const char *filename);
 
