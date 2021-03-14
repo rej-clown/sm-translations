@@ -20,6 +20,7 @@ install:
   - git clone https://github.com/alliedmodders/sourcemod.git -b $SOURCEMOD_VERSION --depth 1 -j8 --recurse-submodules --shallow-submodules $TRAVIS_BUILD_DIR/../sourcemod
   - git clone https://github.com/alliedmodders/ambuild.git --depth 1 $TRAVIS_BUILD_DIR/../ambuild
   - python3 -m pip install --upgrade pip setuptools
+  - pip install --upgrade pip
   - python3 -m pip install $TRAVIS_BUILD_DIR/../ambuild
 
 script:
