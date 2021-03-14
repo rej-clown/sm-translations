@@ -5,17 +5,17 @@
 
 methodmap PhraseCollection < Handle
 {
-	native PhraseCollection(Handle hPlugin); //?
+	public native PhraseCollection(Handle hPlugin); //?
 
-	native int GetSize();
-	native PhraseFile GetFile(int index);
-	native void AddFile(const char[] filename);
+	public native int GetSize();
+	public native PhraseFile GetFile(int index);
+	public native void AddFile(const char[] filename);
 }
 
 methodmap PhraseFile < Handle
 {
-	native void GetFilename(char[] buffer, int size);
-	native bool TranslationPhraseExists(const char[] phrase);
+	public native void GetFilename(char[] buffer, int size);
+	public native bool TranslationPhraseExists(const char[] phrase);
 }
 
 public Extension __ext_ex_translations =
