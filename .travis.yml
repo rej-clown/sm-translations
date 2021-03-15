@@ -18,11 +18,10 @@ jobs:
       os: linux
 
 install:
-  - git clone https://github.com/alliedmodders/sourcemod.git -b $SOURCEMOD_VERSION --depth 1 -j8 --recurse-submodules --shallow-submodules $TRAVIS_BUILD_DIR/../sourcemod
-  - git clone https://github.com/alliedmodders/ambuild.git --depth 1 $TRAVIS_BUILD_DIR/../ambuild
   - pip install --upgrade pip
   - pip install setuptools
-  - pip install $TRAVIS_BUILD_DIR/../ambuild
+  - git clone https://github.com/alliedmodders/sourcemod.git -b $SOURCEMOD_VERSION --depth 1 -j8 --recurse-submodules --shallow-submodules $TRAVIS_BUILD_DIR/../sourcemod
+  - bash $TRAVIS_BUILD_DIR/../sourcemod/tools/checkout-deps.sh
 
 before_script:
   - mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
