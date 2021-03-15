@@ -26,7 +26,6 @@ install:
   - git clone https://github.com/alliedmodders/hl2sdk.git -b css --depth 1 $TRAVIS_BUILD_DIR/../hl2sdk-css
   - git clone https://github.com/alliedmodders/hl2sdk.git -b csgo --depth 1 $TRAVIS_BUILD_DIR/../hl2sdk-csgo
   - pip install $TRAVIS_BUILD_DIR/../ambuild
-  - git clone 
 
 before_script:
   - mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
