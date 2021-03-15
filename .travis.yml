@@ -21,12 +21,16 @@ install:
   - pip install --upgrade pip
   - pip install setuptools
   - git clone https://github.com/alliedmodders/sourcemod.git -b $SOURCEMOD_VERSION --depth 1 -j8 --recurse-submodules --shallow-submodules $TRAVIS_BUILD_DIR/../sourcemod
-  - cp $TRAVIS_BUILD_DIR/../sourcemod/tools/checkout-deps.sh $TRAVIS_BUILD_DIR/ 
-  - bash $TRAVIS_BUILD_DIR/checkout-deps.sh
+  - git clone https://github.com/alliedmodders/ambuild.git --depth 1 $TRAVIS_BUILD_DIR/../ambuild
+  - git clone https://github.com/alliedmodders/metamod-source.git -b 1.10-dev --depth 1 $TRAVIS_BUILD_DIR/../mmsource-1.10
+  - git clone https://github.com/alliedmodders/hl2sdk.git -b css --depth 1 $TRAVIS_BUILD_DIR/../hl2sdk-css
+  - git clone https://github.com/alliedmodders/hl2sdk.git -b csgo --depth 1 $TRAVIS_BUILD_DIR/../hl2sdk-csgo
+  - pip install $TRAVIS_BUILD_DIR/../ambuild
+  - git clone 
 
 before_script:
   - mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
-  - python ../configure.py --enable-optimize
+  - python ../configure.py --enable-optimize --sdks=csgo,css
 
 script:
   - ambuild
