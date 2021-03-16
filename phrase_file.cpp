@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+
 #include "extension.h"
 
 void CMTFileHandler::OnHandleDestroy(HandleType_t type, void *object)
@@ -52,6 +53,34 @@ const char *CMTranslationFile::GetFilename()
     return file->GetFilename();
 }
 
+const char *CMTranslationFile::GetFilepath(int lang)
+{
+    char *path = new char[PLATFORM_MAX_PATH];
+
+    if(lang != -1)
+    {
+        const char *code;
+        translator->GetLanguageInfo((unsigned int)lang, &code, NULL);
+
+        g_pSM->BuildPath(Path_SM, 
+            path, 
+            PLATFORM_MAX_PATH,
+            "translations/%s/%s",
+            code,
+            file->GetFilename());
+    } 
+    else 
+    {
+        g_pSM->BuildPath(Path_SM, 
+            path, 
+            PLATFORM_MAX_PATH,
+            "translations/%s",
+            file->GetFilename());
+    }
+
+    return (const char *) path;
+}
+
 bool CMTranslationFile::TranslationPhraseExists(const char *phrase)
 {
     return file->TranslationPhraseExists(phrase);
@@ -60,6 +89,37 @@ bool CMTranslationFile::TranslationPhraseExists(const char *phrase)
 bool CMTranslationFile::IsNull()
 {
     return (file == NULL);
+}
+
+bool CMTranslationFile::IsSplitted()
+{
+    const char *filename;
+    filename = GetFilename();
+
+    char path[PLATFORM_MAX_PATH];
+    const char *code;
+
+    for(unsigned int i = 0; i < translator->GetLanguageCount(); i++)
+    {
+        if(!translator->GetLanguageInfo(i, &code, NULL))
+        {
+            continue;
+        }
+
+        g_pSM->BuildPath(Path_SM, 
+            path, 
+            PLATFORM_MAX_PATH, 
+            "translations/%s/%s", 
+            code, 
+            filename);
+        
+        if(libsys->PathExists(path))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static cell_t CMTFTranslationExists(IPluginContext *pContext, const cell_t *params)
@@ -94,9 +154,49 @@ static cell_t CMTFilename(IPluginContext *pContext, const cell_t *params)
     return 1;
 }
 
+static cell_t CMTFSplitted(IPluginContext *pContext, const cell_t *params)
+{
+    Handle_t hndl = static_cast<Handle_t>(params[1]);
+
+    HandleError err;
+    CMTranslationFile *tFile;
+    if((err = handlesys->ReadHandle(hndl, htTFile, NULL, (void **)&tFile)) != HandleError_None)
+    {
+        return pContext->ThrowNativeError("Invalid handle index %x (error: %d)", hndl, err);
+    }
+
+    return tFile->IsSplitted();
+}
+
+static cell_t CMTFGetFilepath(IPluginContext *pContext, const cell_t *params)
+{
+    Handle_t hndl = static_cast<Handle_t>(params[1]);
+
+    HandleError err;
+    CMTranslationFile *tFile;
+    if((err = handlesys->ReadHandle(hndl, htTFile, NULL, (void **)&tFile)) != HandleError_None)
+    {
+        return pContext->ThrowNativeError("Invalid handle index %x (error: %d)", hndl, err);
+    }
+
+    int lang = (int)params[2];
+    if(lang != -1 && (unsigned int)lang >= translator->GetLanguageCount())
+    {
+        return pContext->ThrowNativeError("Invalid lang id %d (max: %d)", lang, (translator->GetLanguageCount() - 1));
+    }
+
+    const char *path;
+    path = tFile->GetFilepath(lang);
+
+    pContext->StringToLocal(params[3], params[4], path);
+    return libsys->PathExists(path);
+}
+
 const sp_nativeinfo_t cmt_file_natives[] =
 {
+    {"PhraseFile.IsSplitted", CMTFSplitted},
     {"PhraseFile.GetFilename", CMTFilename},
+    {"PhraseFile.GetFilepath", CMTFGetFilepath},
     {"PhraseFile.TranslationPhraseExists", CMTFTranslationExists},
     {NULL, NULL}
 };

@@ -45,34 +45,41 @@ bool CMTranslation::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
     sharesys->AddNatives(myself, cmt_collection_natives);
     sharesys->AddNatives(myself, cmt_file_natives);
-	sharesys->RegisterLibrary(myself, "ex_translations");
+    sharesys->AddNatives(myself, cmt_translator_natives);
+    sharesys->RegisterLibrary(myself, "ex_translations");
 
-	// TODO: Secure & Access
-	HandleAccess haPhraseCollection;
-	haPhraseCollection.access[HandleAccess_Clone] = 0;
-	haPhraseCollection.access[HandleAccess_Delete] = 0;
-	haPhraseCollection.access[HandleAccess_Read] = 0;
+    // TODO: Secure & Access
+    HandleAccess haPhraseCollection;
+    haPhraseCollection.access[HandleAccess_Clone] = 0;
+    haPhraseCollection.access[HandleAccess_Delete] = 0;
+    haPhraseCollection.access[HandleAccess_Read] = 0;
 
-	htTCollection = handlesys->CreateType("PhraseCollection", &g_trCollection, 0, NULL, &haPhraseCollection, myself->GetIdentity(), NULL);
+    htTCollection = handlesys->CreateType("PhraseCollection", &g_trCollection, 0, NULL, &haPhraseCollection, myself->GetIdentity(), NULL);
 
     HandleAccess haPhraseFile;
-	haPhraseFile.access[HandleAccess_Clone] = 0;
-	haPhraseFile.access[HandleAccess_Delete] = 0;
-	haPhraseFile.access[HandleAccess_Read] = 0;
+    haPhraseFile.access[HandleAccess_Clone] = 0;
+    haPhraseFile.access[HandleAccess_Delete] = 0;
+    haPhraseFile.access[HandleAccess_Read] = 0;
 
-	htTFile = handlesys->CreateType("PhraseFile", &g_trFile, htTCollection, NULL, &haPhraseFile, myself->GetIdentity(), NULL);
+    htTFile = handlesys->CreateType("PhraseFile", &g_trFile, htTCollection, NULL, &haPhraseFile, myself->GetIdentity(), NULL);
     
     return true;
 }
 
 void CMTranslation::SDK_OnUnload()
 {
-	handlesys->RemoveType(htTCollection, myself->GetIdentity());
+    handlesys->RemoveType(htTCollection, myself->GetIdentity());
     handlesys->RemoveType(htTFile, myself->GetIdentity());
 }
 
+static cell_t CMTRebuildLanguage(IPluginContext *pContext, const cell_t *params)
+{
+    translator->RebuildLanguageDatabase();
+    return 1;
+}
 
-
-
-
-
+const sp_nativeinfo_t cmt_translator_natives[] =
+{
+    {"RebuildLanguageDatabase", CMTRebuildLanguage},
+    {NULL, NULL}
+};

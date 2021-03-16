@@ -67,7 +67,110 @@ methodmap PhraseFile < Handle
     //
     // @error               Invalid (parent/child)handle
     public native bool TranslationPhraseExists(const char[] phrase);
+
+
+    // Is the file split by language 
+    //
+    // @return              true - splitted / false - otherwise
+    //
+    // @error               Invalid (parent/child)handle
+    public native bool IsSplitted();
+
+
+    // Retrieves the full path to the phrase file. 
+    //
+    // @param   lang        -1 if the file is not split, otherwise - language id 
+    // @param   buffer      Buffer to store
+    // @param   size        Buffer size
+    //
+    // @return              true - path exists / false - otherwise
+    //
+    // @error               Invalid (parent/child)handle / lang id
+    public native bool GetFilepath(int lang = -1, char[] buffer, int size);
+
+
+    // Exports a Phrases tree to a phrase file. 
+    //
+    // @param   kv          KeyValue tree
+    // @param   path        Path to the phrase file
+    //
+    // @return              true - success/false - otherwise
+    //
+    // @error               Invalid (parent/child)handle
+    public bool ExportToFile(KeyValues kv, const char[] path)
+    {
+        kv.Rewind();
+        if(!kv.GotoFirstSubKey())
+        {
+            return false;
+        }
+
+        File hFile;
+        if((hFile = OpenFile(path, "w")) == null)
+        {
+            return false;
+        }
+
+        char szBuffer[PLATFORM_MAX_PATH];
+        char szValue[PLATFORM_MAX_PATH];
+
+        hFile.WriteLine("\"Phrases\" \n{");
+
+        do
+        {
+            kv.GetSectionName(szBuffer, sizeof(szBuffer));
+            hFile.WriteLine("\t\"%s\" \n\t{", szBuffer);
+
+            if(kv.GotoFirstSubKey(false))
+            {
+                do
+                {
+                    kv.GetSectionName(szBuffer, sizeof(szBuffer));
+                    kv.GetString("", szValue, sizeof(szValue));
+
+                    hFile.WriteLine("\t\t\"%s\"\t\t\t\"%s\"", szBuffer, szValue);
+
+                } while(kv.GotoNextKey(false));
+
+                kv.GoBack();
+            }
+
+            hFile.WriteLine("\t}");
+
+        } while(kv.GotoNextKey());
+
+        hFile.WriteLine("}");
+
+        delete hFile;
+        return true;
+    }
+
+    // Imports a phrase file in KeyValues format
+    //
+    // @param   path        Path to the phrase file
+    //
+    // @return              KeyValue or null
+    //
+    // @error               Invalid (parent/child)handle
+    public KeyValues ImportFromFile(const char[] path)
+    {
+        KeyValues kv;
+        kv = new KeyValues("Phrases");
+
+        if(!kv.ImportFromFile(path))
+        {
+            delete kv;
+        }
+
+        return kv;
+    }
 }
+
+
+/**
+ *  Reparses all loaded translations files.
+ */
+native void RebuildLanguageDatabase();
 
 public Extension __ext_ex_translations =
 {
@@ -84,3 +187,10 @@ public Extension __ext_ex_translations =
     required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public void __ext_ex_translations_SetNTVOptional()
+{
+    MarkNativeAsOptional("RebuildLanguageDatabase");
+}
+#endif

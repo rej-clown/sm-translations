@@ -45,11 +45,13 @@ CMTranslationCollection::CMTranslationCollection(IPlugin *plugin)
 
 CMTranslationCollection::~CMTranslationCollection()
 {
+    pl = NULL;
+    collection = NULL;
 }
 
 unsigned int CMTranslationCollection::GetSize()
 {
-    return (unsigned int) this->collection->GetFileCount();
+    return (unsigned int) collection->GetFileCount();
 }
 
 int CMTranslationCollection::FindFile(const char *filename)
@@ -80,7 +82,7 @@ IPhraseFile *CMTranslationCollection::GetFile(unsigned int file)
 
 IPhraseFile *CMTranslationCollection::AddFile(const char *filename)
 {
-    return this->collection->AddPhraseFile(filename);
+    return collection->AddPhraseFile(filename);
 }
 
 static cell_t CMTGetCollection(IPluginContext *pContext, const cell_t *params) 
@@ -96,7 +98,7 @@ static cell_t CMTGetCollection(IPluginContext *pContext, const cell_t *params)
 
     CMTranslationCollection *collection = NULL;
     collection = new CMTranslationCollection(pl);
-
+    
     hndl = handlesys->CreateHandle(htTCollection, collection, pContext->GetIdentity(), myself->GetIdentity(), &err);
     // g_pSM->LogMessage(myself, "Create collection %x (code: %d)", hndl, err);
 
@@ -106,8 +108,8 @@ static cell_t CMTGetCollection(IPluginContext *pContext, const cell_t *params)
 static cell_t CMTGetCollectionSize(IPluginContext *pContext, const cell_t *params)
 {
     Handle_t hndl = static_cast<Handle_t>(params[1]);
-    HandleError err;
 
+    HandleError err;
     CMTranslationCollection *collection;
     if((err = handlesys->ReadHandle(hndl, htTCollection, NULL, (void **)&collection)) != HandleError_None)
     {
@@ -120,8 +122,8 @@ static cell_t CMTGetCollectionSize(IPluginContext *pContext, const cell_t *param
 static cell_t CMTCollectionAddFile(IPluginContext *pContext, const cell_t *params)
 {
     Handle_t hndl = static_cast<Handle_t>(params[1]);
-    HandleError err;
 
+    HandleError err;
     CMTranslationCollection *collection;
     if((err = handlesys->ReadHandle(hndl, htTCollection, NULL, (void **)&collection)) != HandleError_None)
     {
@@ -131,9 +133,7 @@ static cell_t CMTCollectionAddFile(IPluginContext *pContext, const cell_t *param
     char *filename;
     pContext->LocalToString(params[2], &filename);
 
-    const char *pFile = filename;
-    collection->AddFile(pFile);
-
+    collection->AddFile((const char *)filename);
     return 1;
 }
 
