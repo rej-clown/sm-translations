@@ -24,7 +24,7 @@ install:
   - pip install --upgrade pip
   - pip install setuptools
   - git clone https://github.com/alliedmodders/sourcemod.git -b $SOURCEMOD_VERSION --depth 1 -j8 --recurse-submodules --shallow-submodules $TRAVIS_BUILD_DIR/../sourcemod
-  - bash ./travis/checkout-deps
+  - bash $TRAVIS_BUILD_DIR/travis/checkout-deps
 
 before_script:
   - mkdir $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build
