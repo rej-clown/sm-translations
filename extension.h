@@ -126,10 +126,11 @@ public :
 
 public :
 	const char *GetFilename();
-	const char *GetFilepath(int lang);
+	const char *GetFilepath(int lang, PathType type);
 	bool TranslationPhraseExists(const char *phrase);
 	bool IsNull();
 	bool IsSplitted();
+	bool IsPathExists(int lang);
 
 private: 
 	IPhraseFile *file;

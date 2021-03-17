@@ -53,7 +53,7 @@ const char *CMTranslationFile::GetFilename()
     return file->GetFilename();
 }
 
-const char *CMTranslationFile::GetFilepath(int lang)
+const char *CMTranslationFile::GetFilepath(int lang, PathType type)
 {
     char *path = new char[PLATFORM_MAX_PATH];
 
@@ -62,7 +62,7 @@ const char *CMTranslationFile::GetFilepath(int lang)
         const char *code;
         translator->GetLanguageInfo((unsigned int)lang, &code, NULL);
 
-        g_pSM->BuildPath(Path_SM, 
+        g_pSM->BuildPath(type, 
             path, 
             PLATFORM_MAX_PATH,
             "translations/%s/%s",
@@ -71,12 +71,14 @@ const char *CMTranslationFile::GetFilepath(int lang)
     } 
     else 
     {
-        g_pSM->BuildPath(Path_SM, 
+        g_pSM->BuildPath(type, 
             path, 
             PLATFORM_MAX_PATH,
             "translations/%s",
             file->GetFilename());
     }
+
+    // g_pSM->LogMessage(myself, "Path: %s", path);
 
     return (const char *) path;
 }
@@ -93,12 +95,7 @@ bool CMTranslationFile::IsNull()
 
 bool CMTranslationFile::IsSplitted()
 {
-    const char *filename;
-    filename = GetFilename();
-
-    char path[PLATFORM_MAX_PATH];
     const char *code;
-
     for(unsigned int i = 0; i < translator->GetLanguageCount(); i++)
     {
         if(!translator->GetLanguageInfo(i, &code, NULL))
@@ -106,20 +103,21 @@ bool CMTranslationFile::IsSplitted()
             continue;
         }
 
-        g_pSM->BuildPath(Path_SM, 
-            path, 
-            PLATFORM_MAX_PATH, 
-            "translations/%s/%s", 
-            code, 
-            filename);
-        
-        if(libsys->PathExists(path))
+        if(IsPathExists(i))
         {
             return true;
         }
     }
 
     return false;
+}
+
+bool CMTranslationFile::IsPathExists(int lang)
+{
+    const char *path;
+    path = GetFilepath(lang, Path_SM);
+
+    return libsys->PathExists(path);
 }
 
 static cell_t CMTFTranslationExists(IPluginContext *pContext, const cell_t *params)
@@ -185,11 +183,8 @@ static cell_t CMTFGetFilepath(IPluginContext *pContext, const cell_t *params)
         return pContext->ThrowNativeError("Invalid lang id %d (max: %d)", lang, (translator->GetLanguageCount() - 1));
     }
 
-    const char *path;
-    path = tFile->GetFilepath(lang);
-
-    pContext->StringToLocal(params[3], params[4], path);
-    return libsys->PathExists(path);
+    pContext->StringToLocal(params[3], params[4], (tFile->GetFilepath(lang, Path_SM_Rel)));
+    return tFile->IsPathExists(lang);
 }
 
 const sp_nativeinfo_t cmt_file_natives[] =
