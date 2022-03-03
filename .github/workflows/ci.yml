@@ -11,6 +11,15 @@ jobs:
       matrix:
         os: [ubuntu-18.04, windows-2019, macos-10.15]
         sourcemod-version: [1.10-dev]
+        include:
+          - os: ubuntu-18.04
+            target-archs: x86,x86_64
+
+          - os: windows-2019
+            target-archs: x86,x86_64
+
+          - os: macos-10.15
+            target-archs: x86_64
 
     steps:
       - name: Install Linux packages
@@ -51,7 +60,7 @@ jobs:
         shell: bash
         run: |
           mkdir build && cd build
-          python ../configure.py --enable-optimize
+          python ../configure.py --enable-optimize --targets=${{ matrix.target-archs }}
           ambuild
 
       - name: Upload artifact
