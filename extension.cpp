@@ -1,39 +1,8 @@
-/**
- * vim: set ts=4 :
- * =============================================================================
- * SourceMod Sample Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
- * =============================================================================
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
- */
-
 #include "extension.h"
 
-CMTranslation g_cmTranslation;		/**< Global singleton for extension's main interface */
+CExTranslator g_exTranslator;
 
-SMEXT_LINK(&g_cmTranslation);
+SMEXT_LINK(&g_exTranslator);
 
 HandleType_t htTCollection=0;
 CMTCollectionHandler g_trCollection;
@@ -41,7 +10,7 @@ CMTCollectionHandler g_trCollection;
 HandleType_t htTFile=0;
 CMTFileHandler g_trFile;
 
-bool CMTranslation::SDK_OnLoad(char *error, size_t maxlength, bool late)
+bool CExTranslator::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
     sharesys->AddNatives(myself, cmt_collection_natives);
     sharesys->AddNatives(myself, cmt_file_natives);
@@ -62,14 +31,49 @@ bool CMTranslation::SDK_OnLoad(char *error, size_t maxlength, bool late)
     haPhraseFile.access[HandleAccess_Read] = 0;
 
     htTFile = handlesys->CreateType("PhraseFile", &g_trFile, htTCollection, NULL, &haPhraseFile, myself->GetIdentity(), NULL);
-    
+
+    m_pPluginListener = nullptr;
+
+    smutils->BuildPath(Path_SM, m_extSettings, PLATFORM_MAX_PATH, SMEXT_CONF_PATH);
+
+    if(!libsys->PathExists(m_extSettings))
+    {
+        sprintf(error, "Path must be exists: %s", m_extSettings);
+        return false;
+    }
+
+    OnCoreMapStart(nullptr, 0, 0);
+
     return true;
 }
 
-void CMTranslation::SDK_OnUnload()
+void CExTranslator::SDK_OnUnload()
 {
     handlesys->RemoveType(htTCollection, myself->GetIdentity());
     handlesys->RemoveType(htTFile, myself->GetIdentity());
+}
+
+void CExTranslator::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax) {
+
+    nExTranslator::CSMCListener smcListener { translator };
+
+    if(textparsers->ParseFile_SMC(m_extSettings, &smcListener, nullptr) == SMCError_Okay)
+    {
+        if(m_pPluginListener != nullptr)
+        {
+            plsys->RemovePluginsListener_V1(m_pPluginListener);
+
+            delete m_pPluginListener;
+
+            m_pPluginListener = nullptr;
+        }
+
+        m_pPluginListener = new nExTranslator::CPluginListenerV1(smcListener.GetContainer());
+
+        plsys->AddPluginsListener_V1(m_pPluginListener);
+    }
+
+    IExtensionInterface::OnCoreMapStart(pEdictList, edictCount, clientMax);
 }
 
 static cell_t CMTRebuildLanguage(IPluginContext *pContext, const cell_t *params)

@@ -40,12 +40,13 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"EXTranslations"
 #define SMEXT_CONF_DESCRIPTION	"..."
-#define SMEXT_CONF_VERSION		"1.0.0.1"
-#define SMEXT_CONF_AUTHOR		"nyood?"
+#define SMEXT_CONF_VERSION		"1.1.0.0"
+#define SMEXT_CONF_AUTHOR		"rej.chev"
 #define SMEXT_CONF_URL			""
 #define SMEXT_CONF_LOGTAG		"EXTranslations"
 #define SMEXT_CONF_LICENSE		"GPL"
 #define SMEXT_CONF_DATESTRING	__DATE__
+#define SMEXT_CONF_PATH         "configs/ex-translator/settings.ini"
 
 /** 
  * @brief Exposes plugin's main interface.
@@ -73,7 +74,7 @@
 //#define SMEXT_ENABLE_ADTFACTORY
 #define SMEXT_ENABLE_PLUGINSYS
 //#define SMEXT_ENABLE_ADMINSYS
-//#define SMEXT_ENABLE_TEXTPARSERS
+#define SMEXT_ENABLE_TEXTPARSERS
 //#define SMEXT_ENABLE_USERMSGS
 #define SMEXT_ENABLE_TRANSLATOR
 //#define SMEXT_ENABLE_ROOTCONSOLEMENU

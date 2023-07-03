@@ -11,8 +11,8 @@ folder_list = [
   'addons/sourcemod/scripting/include',
   #'addons/sourcemod/scripting/include/jansson',
   #'addons/sourcemod/gamedata',
-  #'addons/sourcemod/configs',
-  #'addons/sourcemod/configs/ripext',
+  'addons/sourcemod/configs',
+  'addons/sourcemod/configs/ex-translator',
 ]
 
 if 'x86_64' in Extension.target_archs:
@@ -48,11 +48,9 @@ CopyFiles('pawn/scripting/include', 'addons/sourcemod/scripting/include',
 #)
 
 # Config Files
-#CopyFiles('configs', 'addons/sourcemod/configs',
-#  [ 'configfile.cfg',
-#  'otherconfig.cfg,
-#  ]
-#)
+CopyFiles('pawn/configs/ex-translator', 'addons/sourcemod/configs/ex-translator',
+  [ 'settings.ini' ]
+)
 #
 
 # Copy binaries.

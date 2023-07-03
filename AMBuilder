@@ -9,12 +9,14 @@ for cxx in builder.targets:
     'extension.cpp',
     'phrase_collection.cpp',
     'phrase_file.cpp',
+    os.path.join(builder.sourcePath, 'src', 'CPluginListenerV1.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'CSMCListener.cpp'),
     os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
   ]
 
-  # binary.compiler.includes += [
-  #   os.path.join(builder.sourcePath, 'jansson', 'include'),
-  # ]
+  binary.compiler.includes += [
+     os.path.join(builder.sourcePath, 'src'),
+  ]
 
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
