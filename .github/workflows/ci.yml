@@ -9,17 +9,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, windows-2019, macos-10.15]
-        sourcemod-version: [1.10-dev]
+        os: [ubuntu-latest, windows-latest]
+        sourcemod-version: [1.11-dev]
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             target-archs: x86,x86_64
 
-          - os: windows-2019
+          - os: windows-latest
             target-archs: x86,x86_64
-
-          - os: macos-10.15
-            target-archs: x86_64
 
     steps:
       - name: Install Linux packages
@@ -28,16 +25,22 @@ jobs:
           sudo apt update
           sudo apt install -yq --no-install-recommends g++-multilib
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Setup Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: extension
 
       - name: Checkout SourceMod
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: alliedmodders/sourcemod
           ref: ${{ matrix.sourcemod-version }}
@@ -45,7 +48,7 @@ jobs:
           submodules: recursive
 
       - name: Checkout AMBuild
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: alliedmodders/ambuild
           path: ambuild
@@ -59,12 +62,13 @@ jobs:
         working-directory: extension
         shell: bash
         run: |
+          echo ${{ github.run_number }}
           mkdir build && cd build
           python ../configure.py --enable-optimize --targets=${{ matrix.target-archs }}
           ambuild
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }}
           path: extension/build/package
@@ -78,14 +82,13 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
 
       - name: Package
         run: |
           version=`echo $GITHUB_REF | sed "s/refs\/tags\///"`
-          7z a etranslation-${version}-linux.zip ./Linux/*
-          7z a etranslation-${version}-mac.zip ./macOS/*
-          7z a etranslation-${version}-windows.zip ./Windows/*
+          7z a ex-translations-${version}.${{ github.run_number }}-linux.zip ./Linux/*
+          7z a ex-translations-${version}.${{ github.run_number }}-windows.zip ./Windows/*
 
       - name: Release
         uses: svenstaro/upload-release-action@v2
