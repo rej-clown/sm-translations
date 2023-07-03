@@ -7,10 +7,15 @@ for cxx in builder.targets:
 
   binary.sources += [
     'extension.cpp',
-    'phrase_collection.cpp',
-    'phrase_file.cpp',
+    os.path.join(builder.sourcePath, 'src', 'dispatches.cpp'),
     os.path.join(builder.sourcePath, 'src', 'CPluginListenerV1.cpp'),
     os.path.join(builder.sourcePath, 'src', 'CSMCListener.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'types', 'CHandleType.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'types', 'CHandleTypeManager.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'types', 'CHandleTypeUtils.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'natives', 'global_natives.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'natives', 'phrase_natives.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'natives', 'phcollection_natives.cpp'),
     os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
   ]
 

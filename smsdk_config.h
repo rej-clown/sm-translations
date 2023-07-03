@@ -40,7 +40,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"EXTranslations"
 #define SMEXT_CONF_DESCRIPTION	"..."
-#define SMEXT_CONF_VERSION		"1.1.0.0"
+#define SMEXT_CONF_VERSION		"1.2.0.0"
 #define SMEXT_CONF_AUTHOR		"rej.chev"
 #define SMEXT_CONF_URL			""
 #define SMEXT_CONF_LOGTAG		"EXTranslations"

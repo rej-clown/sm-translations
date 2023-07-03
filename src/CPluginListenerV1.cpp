@@ -33,7 +33,9 @@ namespace nExTranslator {
             {
                 fileName = std::string(buffer->GetFile(i)->GetFilename());
 
-                plCollection->AddPhraseFile(fileName.substr(0, fileName.length() - strlen(".txt")).c_str());
+                plCollection->AddPhraseFile(
+                        fileName.substr(0, fileName.length() - strlen(".txt")).c_str()
+                );
             }
 
         }

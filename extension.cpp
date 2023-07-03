@@ -1,36 +1,32 @@
+#include <natives.h>
+#include <dispatches.h>
+#include <CSMCListener.h>
+#include <types/CHandleTypeManager.h>
+
 #include "extension.h"
 
-CExTranslator g_exTranslator;
+using namespace nExTranslator;
 
+CExTranslator g_exTranslator;
 SMEXT_LINK(&g_exTranslator);
 
-HandleType_t htTCollection=0;
-CMTCollectionHandler g_trCollection;
-
-HandleType_t htTFile=0;
-CMTFileHandler g_trFile;
+#define REGISTER_TYPE(manager, type, dispatch, ident) manager.registerType(type, dispatch, 0, nullptr, nullptr, ident)
 
 bool CExTranslator::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-    sharesys->AddNatives(myself, cmt_collection_natives);
-    sharesys->AddNatives(myself, cmt_file_natives);
-    sharesys->AddNatives(myself, cmt_translator_natives);
+    g_TypeMgr = {};
+
+    sharesys->AddNatives(myself, niPhraseCollection);
+    sharesys->AddNatives(myself, niPhraseFile);
+    sharesys->AddNatives(myself, niGlobal);
     sharesys->RegisterLibrary(myself, "ex_translations");
 
-    // TODO: Secure & Access
-    HandleAccess haPhraseCollection;
-    haPhraseCollection.access[HandleAccess_Clone] = 0;
-    haPhraseCollection.access[HandleAccess_Delete] = 0;
-    haPhraseCollection.access[HandleAccess_Read] = 0;
-
-    htTCollection = handlesys->CreateType("PhraseCollection", &g_trCollection, 0, NULL, &haPhraseCollection, myself->GetIdentity(), NULL);
-
-    HandleAccess haPhraseFile;
-    haPhraseFile.access[HandleAccess_Clone] = 0;
-    haPhraseFile.access[HandleAccess_Delete] = 0;
-    haPhraseFile.access[HandleAccess_Read] = 0;
-
-    htTFile = handlesys->CreateType("PhraseFile", &g_trFile, htTCollection, NULL, &haPhraseFile, myself->GetIdentity(), NULL);
+    if(!REGISTER_TYPE(g_TypeMgr, "PhraseCollection", new CPhraseCollectionTypeDispatcher(), myself->GetIdentity())
+    || !REGISTER_TYPE(g_TypeMgr, "PhraseFile", new CPhraseFileTypeDispatcher(), myself->GetIdentity()))
+    {
+        sprintf(error, "Something went wrong on type registration");
+        return false;
+    }
 
     m_pPluginListener = nullptr;
 
@@ -49,13 +45,12 @@ bool CExTranslator::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 void CExTranslator::SDK_OnUnload()
 {
-    handlesys->RemoveType(htTCollection, myself->GetIdentity());
-    handlesys->RemoveType(htTFile, myself->GetIdentity());
+    g_TypeMgr.clear();
 }
 
 void CExTranslator::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax) {
 
-    nExTranslator::CSMCListener smcListener { translator };
+    CSMCListener smcListener { translator };
 
     if(textparsers->ParseFile_SMC(m_extSettings, &smcListener, nullptr) == SMCError_Okay)
     {
