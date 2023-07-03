@@ -3,91 +3,93 @@
 #endif
 #define _ex_translations_included_
 
+native void RebuildLanguageDatabase();
+
+//              (must be freed via delete)
+native PhraseCollection GetPluginPhraseCollection(Handle hPlugin);
+
 methodmap PhraseCollection < Handle
 {
-    // Creates a collection of plugin phrase files 
+    // @desc        Getting a PhraseFile descriptor at a given index
+    //              (must be freed via delete)
     //
-    // The PhraseCollection must be freed via delete or CloseHandle().
-    public native PhraseCollection(Handle hPlugin);
-
-
-    // Retrieves the collection size.
+    // @return      PhraseFile handle (all done) / null
     //
-    // @return           	Size.
-    public native int GetSize();
-
-
-    // Retrieves a PhraseFile object from the collection.
+    // @error       On create PhraseFile handle (log err)
     //
-    // @param   index       File index
-    //
-    // @return              Phrase file (must be freed)
-    //
-    // @error               Invalid handle or index		
+    // @excepts     On read invalid handle
     public native PhraseFile GetFile(int index);
 
+    // @desc        Getting the PhraseFile position in the collection by name
+    //              Name with an extension is expected
+    //              Example: core.phrases.txt
+    //
+    // @return      index / -1 - not found
+    //
+    // @excepts     On read invalid handle
+    public native int FindFile(const char[] fileName);
 
-    // Adding a new file to the plugin collection 
-    // 
-    // @param   filename    Translation filename (with out .txt extension)
+    // @desc        Adding PhraseFile to a collection
+    //              Name without an extension is expected
+    //              Example: core.phrases
     //
-    // @noreturn
+    // @return      true on success
     //
-    // @error               Invalid handle or file isn't exists?
-    public native void AddFile(const char[] filename);
+    // @error       On .txt / .cfg or another exts found 
+    //
+    // @excepts     On read invalid handle
+    public native bool AddFile(const char[] fileName); 
 
+    // @desc        Checks the presence of translation phrase in collection
+    //
+    // @return      true / false
+    //
+    // @excepts     On read invalid handle
+    public native bool IsPhraseInCollection(const char[] translationPhrase);
 
-    // Retrieves an index of phrase file.
+    // @desc        Number of phrase files in the collection
     //
-    // @param   filename    Translation filename
+    // @return      count of PhraseFile
     //
-    // @return              Index or -1 if not found
-    //
-    // @error               Invalid handle
-    public native int FindFile(const char[] filename);
+    // @excepts     On read invalid handle
+    property int Size {
+        public native get();
+    }
 }
 
 methodmap PhraseFile < Handle
 {
-    // Retrieves a phrase filename.
+    // @desc        Getting phrase file name
     //
-    // @param   buffer      Buffer to store
+    // @return      true on receive data / false
     //
-    // @noreturn
-    //
-    // @error               Invalid (parent/child)handle
-    public native void GetFilename(char[] buffer, int size);
+    // @excepts     On read invalid handle
+    public native bool GetName(char[] buffer, int maxLength);
 
+    // @desc        Getting full path to the phrase file by lang
+    //              (if it splitted then lang > -1 or -1 otherwise)
+    //
+    // @return      true on receive data / false
+    //
+    // @excepts     On read invalid handle
+    //              On lang >= max lang count
+    public native bool GetPath(int lang, char[] buffer, int maxLength);
 
-    // Checks for the presence of a phrase in the current phrase file 
+    // @desc        Checks the presence of translation phrase in phrase file
     //
-    // @param   phrase      Phrase to check
+    // @return      true / false
     //
-    // @return              true - exsits / false - otherwise
-    //
-    // @error               Invalid (parent/child)handle
-    public native bool TranslationPhraseExists(const char[] phrase);
+    // @excepts     On read invalid handle
+    public native bool IsPhraseExists(const char[] translationPhrase);
 
-
-    // Is the file split by language 
+    // @desc        Checks is it splitted phrase file
     //
-    // @return              true - splitted / false - otherwise
+    // @return      true / false
     //
-    // @error               Invalid (parent/child)handle
-    public native bool IsSplitted();
-
-
-    // Retrieves the full path to the phrase file. 
-    //
-    // @param   lang        -1 if the file is not split, otherwise - language id 
-    // @param   buffer      Buffer to store
-    // @param   size        Buffer size
-    //
-    // @return              true - path exists / false - otherwise
-    //
-    // @error               Invalid (parent/child)handle / lang id
-    public native bool GetFilepath(int lang = -1, char[] buffer, int size);
-
+    // @excepts     On read invalid handle
+    property bool Splitted {
+        public native get();
+    }
 
     // Exports a Phrases tree to a phrase file. 
     //
@@ -167,11 +169,6 @@ methodmap PhraseFile < Handle
 }
 
 
-/**
- *  Reparses all loaded translations files.
- */
-native void RebuildLanguageDatabase();
-
 public Extension __ext_ex_translations =
 {
     name = "Extended Translations",
@@ -192,5 +189,6 @@ public Extension __ext_ex_translations =
 public void __ext_ex_translations_SetNTVOptional()
 {
     MarkNativeAsOptional("RebuildLanguageDatabase");
+    MarkNativeAsOptional("GetPluginPhraseCollection");
 }
 #endif
